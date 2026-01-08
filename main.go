@@ -45,7 +45,7 @@ func check() error {
 }
 
 /*
-analyze() triggers or retrieves a TLS analysis 
+analyze() triggers or retrieves a TLS analysis
 for a given domain. If startNew is true, a new
 analysis is explicitly started.
 */
@@ -60,6 +60,31 @@ func analyze(domain string, startNew bool) (*Response, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
+
+	// 	The following status codes are used by SSL Labs:
+
+	// 400 - invocation error (e.g., invalid parameters)
+	// 429 - client request rate too high or too many new assessments too fast
+	// 500 - internal error
+	// 503 - the service is not available (e.g., down for maintenance)
+	// 529 - the service is overloaded
+	switch resp.StatusCode {
+	case http.StatusOK:
+		// Continue
+	case http.StatusBadRequest:
+		return nil, fmt.Errorf("invalid request (400): check domain or parameters")
+	case http.StatusTooManyRequests:
+		return nil, fmt.Errorf("rate limit exceeded (429): too many requests")
+	case http.StatusInternalServerError:
+		return nil, fmt.Errorf("internal server error (500)")
+	case http.StatusServiceUnavailable:
+		return nil, fmt.Errorf("service unavailable (503)")
+	default:
+		if resp.StatusCode >= 500 {
+			return nil, fmt.Errorf("server error (%d)", resp.StatusCode)
+		}
+		return nil, fmt.Errorf("unexpected HTTP status (%d)", resp.StatusCode)
+	}
 
 	var result Response
 	err = json.NewDecoder(resp.Body).Decode(&result)
