@@ -1,10 +1,14 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
+	"regexp"
+	"strings"
 	"time"
 )
 
@@ -61,46 +65,99 @@ func analyze(domain string, startNew bool) (*Response, error) {
 	}
 	defer resp.Body.Close()
 
-	// 	The following status codes are used by SSL Labs:
-
-	// 400 - invocation error (e.g., invalid parameters)
-	// 429 - client request rate too high or too many new assessments too fast
-	// 500 - internal error
-	// 503 - the service is not available (e.g., down for maintenance)
-	// 529 - the service is overloaded
-	switch resp.StatusCode {
-	case http.StatusOK:
-		// Continue
-	case http.StatusBadRequest:
-		return nil, fmt.Errorf("invalid request (400): check domain or parameters")
-	case http.StatusTooManyRequests:
-		return nil, fmt.Errorf("rate limit exceeded (429): too many requests")
-	case http.StatusInternalServerError:
-		return nil, fmt.Errorf("internal server error (500)")
-	case http.StatusServiceUnavailable:
-		return nil, fmt.Errorf("service unavailable (503)")
-	default:
-		if resp.StatusCode >= 500 {
-			return nil, fmt.Errorf("server error (%d)", resp.StatusCode)
-		}
-		return nil, fmt.Errorf("unexpected HTTP status (%d)", resp.StatusCode)
+	if err := validateHTTPStatus(resp); err != nil {
+		return nil, err
 	}
 
 	var result Response
-	err = json.NewDecoder(resp.Body).Decode(&result)
-	if err != nil {
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return nil, err
 	}
 
 	return &result, nil
 }
 
+/*
+validateHTTPStatus() checks the status code of
+the API response, to handle different types
+of errors and responses
+*/
+func validateHTTPStatus(resp *http.Response) error {
+
+	/*
+		he following status codes are used in the SSL Labs API:
+
+		400 - invocation error (e.g., invalid parameters)
+		429 - client request rate too high or too many new assessments too fast
+		500 - internal error
+		503 - the service is not available (e.g., down for maintenance)
+		529 - the service is overloaded
+	*/
+	switch resp.StatusCode {
+	case http.StatusOK:
+		return nil
+	case http.StatusBadRequest:
+		return fmt.Errorf("invalid request (400): check domain or parameters")
+	case http.StatusTooManyRequests:
+		return fmt.Errorf("rate limit exceeded (429): too many requests")
+	case http.StatusInternalServerError:
+		return fmt.Errorf("internal server error (500)")
+	case http.StatusServiceUnavailable:
+		return fmt.Errorf("service unavailable (503)")
+	case 529:
+		return fmt.Errorf("service is overloaded (529)")
+	default:
+		if resp.StatusCode >= 500 {
+			return fmt.Errorf("server error (%d)", resp.StatusCode)
+		}
+		return fmt.Errorf("unexpected HTTP status (%d)", resp.StatusCode)
+	}
+}
+
+func validateDomain(domain string) error {
+	if domain == "" {
+		return fmt.Errorf("domain cannot be empty")
+	}
+
+	// Reject URLs with scheme
+	if strings.Contains(domain, "://") {
+		return fmt.Errorf("domain must not include scheme (http:// or https://)")
+	}
+
+	// Regex para validar dominios: permite subdominios, letras, números y guiones
+	var domainRegex = regexp.MustCompile(`^(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$`)
+
+	if !domainRegex.MatchString(domain) {
+		return fmt.Errorf("invalid domain format")
+	}
+
+	return nil
+}
+
 func main() {
 
-	// Validate command-line arguments
-	if len(os.Args) < 2 {
-		fmt.Println("Usage: go run main.go <dominio> Example: go run main.go www.uts.edu.co")
-		return
+	printBanner()
+
+	var domain string
+
+	for {
+		if len(os.Args) > 1 {
+			domain = os.Args[1]
+		} else {
+			fmt.Print("Enter domain: ")
+			reader := bufio.NewReader(os.Stdin)
+			input, err := reader.ReadString('\n')
+			if err != nil {
+				log.Fatal(err)
+			}
+			domain = strings.TrimSpace(input)
+		}
+
+		if err := validateDomain(domain); err != nil {
+			fmt.Println("Invalid domain:", err)
+		} else {
+			break
+		}
 	}
 
 	// Check API availability before starting the analysis
@@ -109,7 +166,6 @@ func main() {
 		return
 	}
 
-	domain := os.Args[1]
 	fmt.Println("Starting TLS analisis for:", domain)
 
 	// Start a new analysis request
@@ -147,4 +203,34 @@ func main() {
 		// Wait 15 seconds before polling again to avoid excessive API requests
 		time.Sleep(15 * time.Second)
 	}
+
+	fmt.Println("\nPress Enter to exit...")
+	bufio.NewReader(os.Stdin).ReadString('\n')
+}
+
+func printBanner() {
+	fmt.Println(`===============================================================================================`)
+	fmt.Println(`                                                                                                                                                                    
+███  ██ ▄▄▄▄▄ ▄▄▄▄  ▄▄ ▄▄ ▄▄     ▄▄▄    ▄█████ ▄▄ ▄▄  ▄▄▄  ▄▄    ▄▄    ▄▄▄▄▄ ▄▄  ▄▄  ▄▄▄▄ ▄▄▄▄▄ 
+██ ▀▄██ ██▄▄  ██▄██ ██ ██ ██    ██▀██   ██     ██▄██ ██▀██ ██    ██    ██▄▄  ███▄██ ██ ▄▄ ██▄▄  
+██   ██ ██▄▄▄ ██▄█▀ ▀███▀ ██▄▄▄ ██▀██   ▀█████ ██ ██ ██▀██ ██▄▄▄ ██▄▄▄ ██▄▄▄ ██ ▀██ ▀███▀ ██▄▄▄ 
+	`)
+	fmt.Println(`===============================================================================================`)
+
+																	            
+	fmt.Println()
+	fmt.Println("Nebula Challenge - TLS Security Checker (Go)")
+	fmt.Println("A high-performance command-line tool for analyzing TLS/SSL security of domains.")
+	fmt.Println()
+	fmt.Println("Usage:")
+	fmt.Println("  go run main.go               -> prompts for a domain")
+	fmt.Println("  go run main.go <domain.com>  -> checks the specified domain")
+	fmt.Println()
+	fmt.Println("Domain format:")
+	fmt.Println("  - Must be a valid hostname, e.g., www.example.com")
+	fmt.Println("  - Can include subdomains")
+	fmt.Println("  - Only letters, numbers, and hyphens allowed in labels")
+	fmt.Println("  - Must have a valid TLD (e.g., .com, .edu, .co)")
+	fmt.Println("===================================================")
+	fmt.Println()
 }
