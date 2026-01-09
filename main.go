@@ -219,7 +219,7 @@ func printBanner() {
 
 																	            
 	fmt.Println()
-	fmt.Println("Nebula Challenge - TLS Security Checker (Go)")
+	fmt.Println("Nebula Challenge - TLS Security Checker")
 	fmt.Println("A high-performance command-line tool for analyzing TLS/SSL security of domains.")
 	fmt.Println()
 	fmt.Println("Usage:")
