@@ -60,10 +60,10 @@ func readDomain() (string, error) {
 }
 
 func printResult(result *ssllabs.Response) {
-	fmt.Println("\nResultado TLS:")
+	fmt.Println("\nTLS result:")
 	for _, ep := range result.Endpoints {
 		if ep.StatusMessage == "Ready" {
-			fmt.Printf("IP: %s | Calificación: %s\n", ep.IPAddress, ep.Grade)
+			fmt.Printf("IP: %s | Grade: %s\n", ep.IPAddress, ep.Grade)
 		}
 	}
 }

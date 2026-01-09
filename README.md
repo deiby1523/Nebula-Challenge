@@ -1,5 +1,5 @@
 # TLS Security Checker
-A high-performance command-line tool written in Go for analyzing TLS/SSL security configurations across multiple domains with concurrent execution.
+A high-performance command-line tool written in Go for analyzing TLS/SSL security configurations in a given domain.
 
 ## Features
 
@@ -27,11 +27,25 @@ cd Nebula-Challenge
 go mod tidy
 ```
 
+### build the app
+
+```bash
+go build .
+```
+
+This will generate an executable file called Nebula-Challenge.exe. You can run this file with the next command
+
+```bash
+.\Nebula-Challenge.exe
+```
+
 ### Run directly
+If you don't want to generate an executable .exe file, you can also run the application directly from the terminal with the following command
 ```bash
 go run main.go
 ```
 ### or run with an argument
+You can also pass an argument to this command if you prefer.
 ```bash
 go run main.go <domain>
 ```

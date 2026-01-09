@@ -143,7 +143,7 @@ func validateDomain(domain string) error {
 	return nil
 }
 
-func main() {
+func mainold() {
 
 	printBanner()
 

@@ -55,6 +55,7 @@ func (c *Client) analyze(domain string, startNew bool) (*Response, error) {
 	}
 	defer resp.Body.Close()
 
+	// Http status handling
 	if err := validateHTTPStatus(resp); err != nil {
 		return nil, err
 	}

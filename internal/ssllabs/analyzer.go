@@ -28,16 +28,15 @@ func (c *Client) RunAnalysis(domain string, maxAttempts int) (*Response, error) 
 			return nil, err
 		}
 
-		fmt.Println("Estado:", result.Status)
+		fmt.Println("Status:", result.Status)
 
 		switch result.Status {
 		case "READY":
 			return result, nil
 		case "ERROR":
-			return nil, fmt.Errorf("El analisis falló.")
+			return nil, fmt.Errorf("Analisis failed.")
 		}
 
-		
 		// Wait 15 seconds before polling again to avoid excessive API requests
 		time.Sleep(15 * time.Second)
 	}
