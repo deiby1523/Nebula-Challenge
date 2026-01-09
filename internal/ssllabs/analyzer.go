@@ -8,10 +8,12 @@ import (
 func (c *Client) RunAnalysis(domain string, maxAttempts int) (*Response, error) {
 
 	// Check API availability before starting the analysis
+	fmt.Println("Conecting to SSL Labs API . . .")
 	if err := c.check(); err != nil {
 		return nil, fmt.Errorf("Failed to conect: %w", err)
 	}
-
+	
+	fmt.Println("Starting TLS analisis for:",domain)
 	// Start a new analysis request
 	_, err := c.analyze(domain, true)
 	if err != nil {

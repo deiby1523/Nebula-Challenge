@@ -61,9 +61,55 @@ func readDomain() (string, error) {
 
 func printResult(result *ssllabs.Response) {
 	fmt.Println("\nTLS result:")
+
 	for _, ep := range result.Endpoints {
-		if ep.StatusMessage == "Ready" {
-			fmt.Printf("IP: %s | Grade: %s\n", ep.IPAddress, ep.Grade)
+		if ep.StatusMessage != "Ready" {
+			continue
 		}
+
+		fmt.Printf("IP: %s | Grade: %s\n", ep.IPAddress, ep.Grade)
+
+		if ep.Duration <= 0 {
+			fmt.Println("assessment duration: unknown")
+		} else {
+			seconds := float64(ep.Duration) / 1000
+			fmt.Printf("assessment duration: %.2f s\n", seconds)
+		}		
+
+
+		// Verificamos que los detalles y el certificado existan
+		if ep.Details == nil {
+			fmt.Println("  └─ Certificate details not available")
+			continue
+		}
+
+		cert := ep.Details.Cert
+
+		fmt.Println("  Certificate information:")
+		fmt.Printf("    ├─ Subject: %s\n", cert.Subject)
+		fmt.Printf("    ├─ Issuer: %s\n", cert.IssuerLabel)
+		fmt.Printf("    ├─ Signature Algorithm: %s\n", cert.SigAlg)
+
+		if len(cert.CommonNames) > 0 {
+			fmt.Printf("    ├─ Common Names: %v\n", cert.CommonNames)
+		}
+
+		if len(cert.AltNames) > 0 {
+			fmt.Printf("    ├─ Alternative Names: %v\n", cert.AltNames)
+		}
+
+		fmt.Printf(
+			"    ├─ Validity: %s → %s\n",
+			time.UnixMilli(cert.NotBefore).Format(time.RFC3339),
+			time.UnixMilli(cert.NotAfter).Format(time.RFC3339),
+		)
+
+		if cert.ValidationType != "" {
+			fmt.Printf("    ├─ Validation Type: %s\n", cert.ValidationType)
+		}
+		fmt.Printf("    ├─ Issues Bitmask: %d\n", cert.Issues)
+		fmt.Printf("    └─ Embedded SCT: %t\n", cert.Sct)
+
+		fmt.Println()
 	}
 }

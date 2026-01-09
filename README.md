@@ -28,32 +28,30 @@ go mod tidy
 ```
 
 ### build the app
-
 ```bash
-go build .
+go build cmd/tls-checker/main.go
 ```
 
-This will generate an executable file called Nebula-Challenge.exe. You can run this file with the next command
+This will generate an executable file called main.exe. You can run this file with the next command
 
 ```bash
-.\Nebula-Challenge.exe
+.\main.exe
 ```
 
 ### Run directly
 If you don't want to generate an executable .exe file, you can also run the application directly from the terminal with the following command
 ```bash
-go run main.go
+go run cmd/tls-checker/main.go
 ```
 ### or run with an argument
 You can also pass an argument to this command if you prefer.
 ```bash
-go run main.go <domain>
+go run cmd/tls-checker/main.go <domain>
 ```
 ### Example
 ```bash
-go run main.go www.uts.edu.co
+go run cmd/tls-checker/main.go www.uts.edu.co
 ```
-
 
 👤 Author
 Deiby Prada
