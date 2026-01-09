@@ -29,28 +29,28 @@ go mod tidy
 
 ### build the app
 ```bash
-go build cmd/tls-checker/main.go
+go build -o tls-checker.exe ./cmd/tls-checker
 ```
 
 This will generate an executable file called main.exe. You can run this file with the next command
 
 ```bash
-.\main.exe
+tls-checker
 ```
 
 ### Run directly
 If you don't want to generate an executable .exe file, you can also run the application directly from the terminal with the following command
 ```bash
-go run cmd/tls-checker/main.go
+go run ./cmd/tls-checker
 ```
 ### or run with an argument
 You can also pass an argument to this command if you prefer.
 ```bash
-go run cmd/tls-checker/main.go <domain>
+go run ./cmd/tls-checker <domain>
 ```
 ### Example
 ```bash
-go run cmd/tls-checker/main.go www.uts.edu.co
+go run ./cmd/tls-checker www.uts.edu.co
 ```
 
 👤 Author
