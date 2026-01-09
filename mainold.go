@@ -15,6 +15,8 @@ import (
 // Base URL for SSL Labs API v2
 const baseURL = "https://api.ssllabs.com/api/v2"
 
+var remainingAttempts = 30
+
 /*
 Response represents the main response returned
 by the SSL Labs analyze endpoint
@@ -59,10 +61,17 @@ func analyze(domain string, startNew bool) (*Response, error) {
 		url += "&startNew=on"
 	}
 
-	resp, err := http.Get(url)
+	// use of http.Client instead of http.Get()
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+	}
+
+	resp, err := client.Get(url)
+
 	if err != nil {
 		return nil, err
 	}
+
 	defer resp.Body.Close()
 
 	if err := validateHTTPStatus(resp); err != nil {
@@ -176,8 +185,11 @@ func main() {
 	}
 
 	// Poll the API until the analysis is completed
-	for {
+	for remainingAttempts > 0 {
+
 		result, err := analyze(domain, false)
+		remainingAttempts--
+
 		if err != nil {
 			fmt.Println("Error consultando análisis:", err)
 			return
@@ -202,6 +214,10 @@ func main() {
 
 		// Wait 15 seconds before polling again to avoid excessive API requests
 		time.Sleep(15 * time.Second)
+	}
+
+	if remainingAttempts == 0 {
+		fmt.Println("Analisis not finished, timeout.")
 	}
 
 	fmt.Println("\nPress Enter to exit...")
