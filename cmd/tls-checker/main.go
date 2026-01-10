@@ -60,16 +60,16 @@ func main() {
 
 	printResult(result)
 
-	save, err := readYesNo("¿Deseas guardar el resultado? (y/n): ")
+	save, err := readYesNo("¿Do you want to save the result? (y/n): ")
 	if err != nil {
-		fmt.Println("Error leyendo la entrada:", err)
+		fmt.Println("Error reading input:", err)
 		return
 	}
 
 	if save {
 		results = append(results, *result)
 		saveResult()
-		fmt.Println("Guardado.")
+		fmt.Println("Saved.")
 	}
 }
 
@@ -171,7 +171,7 @@ func readYesNo(question string) (bool, error) {
 		case "n":
 			return false, nil
 		default:
-			fmt.Println("Opción no válida. Por favor ingresa 'y' o 'n'.")
+			fmt.Println("Invalid Option. Please enter 'y' or 'n'.")
 		}
 	}
 }
