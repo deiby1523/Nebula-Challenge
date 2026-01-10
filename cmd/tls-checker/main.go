@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -12,6 +13,34 @@ import (
 	"Nebula-Challenge/internal/ui"
 	"Nebula-Challenge/internal/validator"
 )
+
+
+var (
+	results     = []ssllabs.Response{}
+	resultsFile = "results.json"
+)
+
+// Save result on json file
+func saveResult() {
+	data, err := json.MarshalIndent(results, "", " ")
+	if err != nil {
+		log.Fatal("Error saving result:", err)
+	}
+	os.WriteFile(resultsFile, data, 0644)
+}
+
+// Load results from json file
+func loadResults() {
+	if _, err := os.Stat(resultsFile); err == nil {
+		// checking if the file exists
+		data, err := os.ReadFile(resultsFile)
+		if err != nil {
+			log.Fatal("Error loading domains:", err)
+		}
+		json.Unmarshal(data, &results)
+	}
+
+}
 
 func main() {
 
@@ -31,8 +60,17 @@ func main() {
 
 	printResult(result)
 
-	fmt.Println("\nPress Enter to exit...")
-	bufio.NewReader(os.Stdin).ReadString('\n')
+	save, err := readYesNo("¿Deseas guardar el resultado? (y/n): ")
+	if err != nil {
+		fmt.Println("Error leyendo la entrada:", err)
+		return
+	}
+
+	if save {
+		results = append(results, *result)
+		saveResult()
+		fmt.Println("Guardado.")
+	}
 }
 
 func readDomain() (string, error) {
@@ -111,5 +149,29 @@ func printResult(result *ssllabs.Response) {
 		fmt.Printf("    └─ Embedded SCT: %t\n", cert.Sct)
 
 		fmt.Println()
+	}
+}
+
+
+func readYesNo(question string) (bool, error) {
+	reader := bufio.NewReader(os.Stdin)
+
+	for {
+		fmt.Print(question)
+		input, err := reader.ReadString('\n')
+		if err != nil {
+			return false, err
+		}
+
+		response := strings.ToLower(strings.TrimSpace(input))
+
+		switch response {
+		case "y":
+			return true, nil
+		case "n":
+			return false, nil
+		default:
+			fmt.Println("Opción no válida. Por favor ingresa 'y' o 'n'.")
+		}
 	}
 }

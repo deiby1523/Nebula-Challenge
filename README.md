@@ -52,6 +52,17 @@ go run ./cmd/tls-checker <domain>
 ```bash
 go run ./cmd/tls-checker www.uts.edu.co
 ```
+## Testing
+
+This project includes unit tests to verify the correct behavior of the application logic.
+
+### Run all tests
+
+To execute all tests in the project (across all packages), run the following command from the root directory:
+
+```bash
+go test ./...
+```
 
 👤 Author
 Deiby Prada

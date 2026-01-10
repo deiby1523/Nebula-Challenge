@@ -8,12 +8,13 @@ import (
 )
 
 // Base URL for SSL Labs API v2
-const baseURL = "https://api.ssllabs.com/api/v2"
+var baseURL = "https://api.ssllabs.com/api/v2"
 
 
 type Client struct {
 	httpClient *http.Client
 }
+
 
 func NewClient(timeout time.Duration) *Client {
 	return &Client{
