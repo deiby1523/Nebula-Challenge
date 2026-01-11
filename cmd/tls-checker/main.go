@@ -24,6 +24,8 @@ var domain string
 
 func main() {
 
+	loadResults()
+
 	if len(os.Args) < 2 {
 		printUsage()
 		return
@@ -70,7 +72,6 @@ func main() {
 		}
 
 	case "list":
-		loadResults()
 		printResults()
 
 	default:
@@ -107,7 +108,6 @@ func loadResults() {
 		}
 
 		if len(data) == 0 {
-			fmt.Println("No results saved")
 			return
 		}
 
@@ -210,6 +210,8 @@ func printResults() {
 			}
 			printResult(&result)
 		}
+	} else {
+		fmt.Println("No results saved")
 	}
 }
 
