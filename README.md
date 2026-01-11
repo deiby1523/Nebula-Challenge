@@ -36,15 +36,26 @@ go build -o tls-checker.exe ./cmd/tls-checker
 
 Generated executables: `tls-checker.exe` (Windows)
 
-### Using the CLI (subcommands)
+### App info
+
+To display an informational message about the application and how to use it correctly, you can use the following command. 
+
+If you are in the Visual Studio Code (PowerShell) terminal, you need to put a dot './' before the command, but if you are in an external terminal like cmd, you don't need to add a dot './' at the beginning.
+
+```bash
+./tls-checker
+```
+
+
+### Using the commands
 
 - Analyze a domain by passing the domain through a flag:
 
 ```bash
-# binario
+
 ./tls-checker analyze --domain www.example.com
 
-# usando go run
+# or also using go run
 go run ./cmd/tls-checker analyze --domain www.example.com
 ```
 

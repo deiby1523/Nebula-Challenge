@@ -23,7 +23,6 @@ var (
 var domain string
 
 func main() {
-	ui.PrintBanner()
 
 	if len(os.Args) < 2 {
 		printUsage()
@@ -80,6 +79,7 @@ func main() {
 }
 
 func printUsage() {
+	ui.PrintBanner()
 	fmt.Println("Usage:")
 	fmt.Println("  tls-checker analyze --domain <domain>   -> analyze a domain (domain optional)")
 	fmt.Println("  tls-checker list                        -> list saved results")
@@ -105,6 +105,12 @@ func loadResults() {
 		if err != nil {
 			log.Fatal("Error loading domains:", err)
 		}
+
+		if len(data) == 0 {
+			fmt.Println("No results saved")
+			return
+		}
+
 		if err := json.Unmarshal(data, &results); err != nil {
 			log.Fatal("Error parsing results file:", err)
 		}
@@ -185,23 +191,25 @@ func printResult(result *ssllabs.Response) {
 }
 
 func printResults() {
-	for _, result := range results {
-		// safety checks to avoid panics
-		if len(result.Endpoints) == 0 {
-			fmt.Println("No endpoints available for result")
-			continue
-		}
-		ep := result.Endpoints[0]
-		if ep.Details == nil {
-			fmt.Println("Result for:", ep.IPAddress, "- certificate details not available")
-		} else {
-			if ep.Details.Cert.CommonNames == nil {
-				fmt.Println("Result for: (no common names) ====================================================================")
-			} else {
-				fmt.Println("Result for:", ep.Details.Cert.CommonNames, "====================================================================")
+	if len(results) > 0 {
+		for _, result := range results {
+			// safety checks to avoid panics
+			if len(result.Endpoints) == 0 {
+				fmt.Println("No endpoints available for result")
+				continue
 			}
+			ep := result.Endpoints[0]
+			if ep.Details == nil {
+				fmt.Println("Result for:", ep.IPAddress, "- certificate details not available")
+			} else {
+				if ep.Details.Cert.CommonNames == nil {
+					fmt.Println("Result for: (no common names) ====================================================================")
+				} else {
+					fmt.Println("Result for:", ep.Details.Cert.CommonNames, "====================================================================")
+				}
+			}
+			printResult(&result)
 		}
-		printResult(&result)
 	}
 }
 
