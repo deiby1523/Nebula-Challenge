@@ -1,0 +1,74 @@
+[
+ {
+  "host": "www.uts.edu.co",
+  "status": "READY",
+  "port": 443,
+  "protocol": "http",
+  "endpoints": [
+   {
+    "ipAddress": "168.119.33.58",
+    "serverName": "static.58.33.119.168.clients.your-server.de",
+    "statusMessage": "Ready",
+    "grade": "A",
+    "duration": 79812,
+    "details": {
+     "hostStartTime": 1768165185478,
+     "cert": {
+      "subject": "CN=uts.edu.co",
+      "commonNames": [
+       "uts.edu.co"
+      ],
+      "altNames": [
+       "uts.edu.co",
+       "www.uts.edu.co"
+      ],
+      "notBefore": 1766437362000,
+      "notAfter": 1774213361000,
+      "issuerSubject": "CN=R13, O=Let's Encrypt, C=US",
+      "issuerLabel": "R13",
+      "sigAlg": "SHA256withRSA",
+      "validationType": "",
+      "issues": 0,
+      "sct": true
+     }
+    }
+   }
+  ]
+ },
+ {
+  "host": "www.uis.edu.co",
+  "status": "READY",
+  "port": 443,
+  "protocol": "http",
+  "endpoints": [
+   {
+    "ipAddress": "159.60.151.121",
+    "serverName": "",
+    "statusMessage": "Ready",
+    "grade": "A+",
+    "duration": 48457,
+    "details": {
+     "hostStartTime": 1768165467312,
+     "cert": {
+      "subject": "CN=*.uis.edu.co",
+      "commonNames": [
+       "*.uis.edu.co"
+      ],
+      "altNames": [
+       "*.uis.edu.co",
+       "uis.edu.co"
+      ],
+      "notBefore": 1757968272000,
+      "notAfter": 1792269071000,
+      "issuerSubject": "CN=GlobalSign GCC R3 DV TLS CA 2020, O=GlobalSign nv-sa, C=BE",
+      "issuerLabel": "GlobalSign GCC R3 DV TLS CA 2020",
+      "sigAlg": "SHA256withRSA",
+      "validationType": "",
+      "issues": 0,
+      "sct": true
+     }
+    }
+   }
+  ]
+ }
+]
