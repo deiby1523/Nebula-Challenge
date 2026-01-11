@@ -1,71 +1,84 @@
 # TLS Security Checker
-A high-performance command-line tool written in Go for analyzing TLS/SSL security configurations in a given domain.
+
+A command-line tool written in Go to analyze the TLS/SSL configuration of a domain using the SSL Labs public API.
 
 ## Features
 
-- Clean Console Output: Well-formatted, readable results
+- Clean console output: results formatted for human reading
+- CLI with subcommands: `analyze` and `list`
+- Idiomatic in Go: use of standard libraries and modular structure
 
-- Idiomatic Go: Focus on standard libraries and best practices
+## Requeriments
 
-## Prerequisites
 - Go 1.20 or higher
-
 - Internet connection
+- Git (optional, to clone the repository)
 
-- Git (for installation)
+## Installation and usage
+Clone the repository:
 
-## Installation & Setup
-
-### Clone the repository
 ```bash
 git clone https://github.com/deiby1523/Nebula-Challenge.git
 cd Nebula-Challenge
 ```
 
-### Initialize and download dependencies
+Download dependencies:
+
 ```bash
 go mod tidy
 ```
 
-### build the app
+Build the app:
+
 ```bash
 go build -o tls-checker.exe ./cmd/tls-checker
 ```
 
-This will generate an executable file called main.exe. You can run this file with the next command
+Generated executables: `tls-checker.exe` (Windows)
+
+### Using the CLI (subcommands)
+
+- Analyze a domain by passing the domain through a flag:
 
 ```bash
-tls-checker
+# binario
+./tls-checker analyze --domain www.example.com
+
+# usando go run
+go run ./cmd/tls-checker analyze --domain www.example.com
 ```
 
-### Run directly
-If you don't want to generate an executable .exe file, you can also run the application directly from the terminal with the following command
+- Analyze a domain by requesting the domain via terminal (without flag):
+
 ```bash
-go run ./cmd/tls-checker
+./tls-checker analyze
+# o
+go run ./cmd/tls-checker analyze
 ```
-### or run with an argument
-You can also pass an argument to this command if you prefer.
+
+The domain will be requested via stdin if it is not provided with `--domain`.
+
+- List saved results (reads results.json and displays the records):
+
 ```bash
-go run ./cmd/tls-checker <domain>
+./tls-checker list
+# o
+go run ./cmd/tls-checker list
 ```
-### Example
-```bash
-go run ./cmd/tls-checker www.uts.edu.co
-```
+
+### Saving results
+
+After completing an analysis, the program asks if you want to save the result. If you confirm, the result is added to the `results.json` file in the project root.
+
+
 ## Testing
-
-This project includes unit tests to verify the correct behavior of the application logic.
-
-### Run all tests
-
-To execute all tests in the project (across all packages), run the following command from the root directory:
+To run unit tests for the project:
 
 ```bash
 go test ./...
 ```
 
-👤 Author
+## Autor
+
 Deiby Prada
 
-📄 License
-This project is licensed under the MIT License - see the LICENSE file for details.

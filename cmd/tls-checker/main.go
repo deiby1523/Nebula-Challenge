@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -14,19 +15,86 @@ import (
 	"Nebula-Challenge/internal/validator"
 )
 
-
 var (
 	results     = []ssllabs.Response{}
 	resultsFile = "results.json"
 )
 
+var domain string
+
+func main() {
+	ui.PrintBanner()
+
+	if len(os.Args) < 2 {
+		printUsage()
+		return
+	}
+
+	switch os.Args[1] {
+	case "analyze":
+		analyzeCmd := flag.NewFlagSet("analyze", flag.ExitOnError)
+		domainFlag := analyzeCmd.String("domain", "", "domain to analyze (e.g., example.com)")
+		_ = analyzeCmd.Parse(os.Args[2:])
+
+		if *domainFlag != "" {
+			domain = *domainFlag
+		}
+
+		// If domain not provided or invalid, prompt the user
+		if err := validator.ValidateDomain(domain); err != nil {
+			var err2 error
+			domain, err2 = readDomain()
+			if err2 != nil {
+				log.Fatal(err2)
+			}
+		}
+
+		client := ssllabs.NewClient(10 * time.Second)
+
+		result, err := client.RunAnalysis(domain, 20)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		printResult(result)
+
+		save, err := readYesNo("Do you want to save the result? (y/n): ")
+		if err != nil {
+			fmt.Println("Error reading input:", err)
+			return
+		}
+
+		if save {
+			results = append(results, *result)
+			saveResult()
+			fmt.Println("Saved.")
+		}
+
+	case "list":
+		loadResults()
+		printResults()
+
+	default:
+		printUsage()
+	}
+}
+
+func printUsage() {
+	fmt.Println("Usage:")
+	fmt.Println("  tls-checker analyze --domain <domain>   -> analyze a domain (domain optional)")
+	fmt.Println("  tls-checker list                        -> list saved results")
+	fmt.Println()
+}
+
 // Save result on json file
 func saveResult() {
 	data, err := json.MarshalIndent(results, "", " ")
 	if err != nil {
+		log.Fatal("Error preparing result for saving:", err)
+	}
+	if err := os.WriteFile(resultsFile, data, 0644); err != nil {
 		log.Fatal("Error saving result:", err)
 	}
-	os.WriteFile(resultsFile, data, 0644)
 }
 
 // Load results from json file
@@ -37,56 +105,22 @@ func loadResults() {
 		if err != nil {
 			log.Fatal("Error loading domains:", err)
 		}
-		json.Unmarshal(data, &results)
+		if err := json.Unmarshal(data, &results); err != nil {
+			log.Fatal("Error parsing results file:", err)
+		}
 	}
 
-}
-
-func main() {
-
-	ui.PrintBanner()
-
-	domain, err := readDomain()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	client := ssllabs.NewClient(10 * time.Second)
-
-	result, err := client.RunAnalysis(domain, 20)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	printResult(result)
-
-	save, err := readYesNo("¿Do you want to save the result? (y/n): ")
-	if err != nil {
-		fmt.Println("Error reading input:", err)
-		return
-	}
-
-	if save {
-		results = append(results, *result)
-		saveResult()
-		fmt.Println("Saved.")
-	}
 }
 
 func readDomain() (string, error) {
-	var domain string
 	for {
-		if len(os.Args) > 1 {
-			domain = os.Args[1]
-		} else {
-			fmt.Print("Enter domain: ")
-			reader := bufio.NewReader(os.Stdin)
-			input, err := reader.ReadString('\n')
-			if err != nil {
-				log.Fatal(err)
-			}
-			domain = strings.TrimSpace(input)
+		fmt.Print("Enter domain: ")
+		reader := bufio.NewReader(os.Stdin)
+		input, err := reader.ReadString('\n')
+		if err != nil {
+			return "", err
 		}
+		domain = strings.TrimSpace(input)
 
 		if err := validator.ValidateDomain(domain); err != nil {
 			fmt.Println("Invalid domain:", err)
@@ -94,7 +128,7 @@ func readDomain() (string, error) {
 			break
 		}
 	}
-	return domain,nil
+	return domain, nil
 }
 
 func printResult(result *ssllabs.Response) {
@@ -112,10 +146,8 @@ func printResult(result *ssllabs.Response) {
 		} else {
 			seconds := float64(ep.Duration) / 1000
 			fmt.Printf("assessment duration: %.2f s\n", seconds)
-		}		
+		}
 
-
-		// Verificamos que los detalles y el certificado existan
 		if ep.Details == nil {
 			fmt.Println("  └─ Certificate details not available")
 			continue
@@ -152,6 +184,26 @@ func printResult(result *ssllabs.Response) {
 	}
 }
 
+func printResults() {
+	for _, result := range results {
+		// safety checks to avoid panics
+		if len(result.Endpoints) == 0 {
+			fmt.Println("No endpoints available for result")
+			continue
+		}
+		ep := result.Endpoints[0]
+		if ep.Details == nil {
+			fmt.Println("Result for:", ep.IPAddress, "- certificate details not available")
+		} else {
+			if ep.Details.Cert.CommonNames == nil {
+				fmt.Println("Result for: (no common names) ====================================================================")
+			} else {
+				fmt.Println("Result for:", ep.Details.Cert.CommonNames, "====================================================================")
+			}
+		}
+		printResult(&result)
+	}
+}
 
 func readYesNo(question string) (bool, error) {
 	reader := bufio.NewReader(os.Stdin)
