@@ -34,7 +34,7 @@ func main() {
 	switch os.Args[1] {
 	case "analyze":
 		analyzeCmd := flag.NewFlagSet("analyze", flag.ExitOnError)
-		domainFlag := analyzeCmd.String("domain", "", "domain to analyze (e.g., example.com)")
+		domainFlag := analyzeCmd.String("domain", "", "domain to analyze (example.com)")
 		_ = analyzeCmd.Parse(os.Args[2:])
 
 		if *domainFlag != "" {
