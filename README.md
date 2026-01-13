@@ -19,6 +19,10 @@ Clone the repository:
 
 ```bash
 git clone https://github.com/deiby1523/Nebula-Challenge.git
+```
+
+Open project folder:
+```bash
 cd Nebula-Challenge
 ```
 
@@ -43,7 +47,7 @@ To display an informational message about the application and how to use it corr
 If you are in the Visual Studio Code (PowerShell) terminal, you need to put a dot './' before the command, but if you are in an external terminal like cmd, you don't need to add a dot './' at the beginning.
 
 ```bash
-./tls-checker
+.\tls-checker
 ```
 
 
@@ -53,7 +57,7 @@ If you are in the Visual Studio Code (PowerShell) terminal, you need to put a do
 
 ```bash
 
-./tls-checker analyze --domain www.example.com
+.\tls-checker analyze --domain www.example.com
 
 # or also using go run
 go run ./cmd/tls-checker analyze --domain www.example.com
@@ -62,7 +66,7 @@ go run ./cmd/tls-checker analyze --domain www.example.com
 - Analyze a domain by requesting the domain via terminal (without flag):
 
 ```bash
-./tls-checker analyze
+.\tls-checker analyze
 # o
 go run ./cmd/tls-checker analyze
 ```
@@ -72,7 +76,7 @@ The domain will be requested via stdin if it is not provided with `--domain`.
 - List saved results (reads results.json and displays the records):
 
 ```bash
-./tls-checker list
+.\tls-checker list
 # o
 go run ./cmd/tls-checker list
 ```
